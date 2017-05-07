@@ -2,48 +2,72 @@ import React, { Component } from 'react';
 
 class App extends Component {
   constructor() {
-    super();
-    this.updateName = this.updateName.bind(this);
-    this.updateLastName = this.updateLastName.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
+    super()
     this.state = {
       guests: [],
-      name: "",
-      lastName: ""
+      errors: {
+        firstName: false,
+        lastName: false
+      }
     }
   }
-  updateLastName(event){
-    this.setState({
-      lastName: event.target.value
-    });
+  
+  validateForm(firstName, lastName) {
+    if (!firstName || !lastName) {
+      this.setState({
+        errors: {
+          firstName: !firstName,
+          lastName: !lastName
+        }
+      })
+      return false
+    }
+    return true
+  } 
+
+  addGuest(event) {
+    event.preventDefault()
+    const firstName = event.target['first-name'].value
+    const lastName = event.target['last-name'].value
+    if (this.validateForm(firstName, lastName)) {
+      const newGuest = {
+        firstName: firstName,
+        lastName: lastName,
+      }
+      this.setState({
+        guests: [...this.state.guests, newGuest],
+        errors: {
+          firstName: false,
+          lastName: false
+        }
+      })
+      event.target.reset()
+    }
   }
-  updateName(event){
-    this.setState({
-      name: event.target.value
-    });
+
+  renderGuest(guest, index) {
+    return (
+      <tr key={index}>
+        <td>{guest.firstName}</td>
+        <td>{guest.lastName}</td>
+      </tr>
+    )
   }
-  handleSubmit(event){
-    event.preventDefault();
-    this.setState({
-      guests: this.state.guests.concat({id: this.state.guests.length +1, name: this.state.name, lastName: this.state.lastName}),
-      name: "",
-      lastName: ""
-    })
-  }
+
   render() {
     return (
       <div className="container">
         <div className="row">
           <div className="col-sm-6 col-sm-offset-3">
-            <form onSubmit={this.handleSubmit}>
-              <div className="form-group">
+            <form onSubmit={this.addGuest.bind(this)}>
+              <div className={`form-group ${this.state.errors.firstName ? 'has-error' : null}`}>
                 <label htmlFor="first-name">Nombre</label>
-                <input type="text" className="form-control" name="first-name" value={this.state.name}  onChange={this.updateName} />
+                <input type="text" className="form-control" name="first-name"  />
               </div>
 
-              <div className="form-group">
+              <div className={`form-group ${this.state.errors.lastName ? 'has-error' : null}`}>
                 <label htmlFor="last-name">Apellido</label>
-                <input type="text" className="form-control" name="last-name" value={this.state.lastName} onChange={this.updateLastName} />
+                <input type="text" className="form-control" name="last-name" />
               </div>
 
               <div className="action">
@@ -59,7 +83,7 @@ class App extends Component {
                 </tr>
               </thead>
               <tbody>
-                {this.state.guests.map((guest,index) => <tr key={index}><td>{guest.name}</td><td>{guest.lastName}</td></tr>)}
+                {this.state.guests.map(this.renderGuest)}
               </tbody>
             </table>
           </div>
